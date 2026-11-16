@@ -76,7 +76,7 @@ POST /v1/ai/answer
 
 L05C 使用 MP3 播放，设备 TTS 指令为 `[5,3]`，连续对话保持关闭。未匹配到音乐或 AI 前缀的请求会交给小爱原生处理，例如“打开客厅的灯”。
 
-自建 `xiaozhi-esp32-server` 负责小智 ESP32 的 WebSocket/MQTT 语音链路；它不是网关可直接调用的 HTTP 聊天接口。网关可复用 xiaozhi-server 中配置的同一个 OpenAI 兼容模型；如需共享小智会话记忆和工具，需要另建文本适配层。
+爱快专用 Compose 假定 lxserver 已独立运行在 `http://192.168.8.1:9527`，Compose 只新增 `xiaozhi-esp32-server` 和 `xiaomi-gateway`。自建 `xiaozhi-esp32-server` 负责小智 ESP32 的 WebSocket/MQTT 语音链路；它不是网关可直接调用的 HTTP 聊天接口。网关可复用 xiaozhi-server 中配置的同一个 OpenAI 兼容模型；如需共享小智会话记忆和工具，需要另建文本适配层。
 
 ## 本地检查
 

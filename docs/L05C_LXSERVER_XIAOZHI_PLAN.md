@@ -89,14 +89,22 @@ MODEL_API_KEY: 你的火山方舟 API Key
 
 ## Compose 服务
 
-统一 Compose 包含：
+通用 Compose 可以包含：
 
 ```text
 lxserver       :9527
 xiaomi-gateway :58092
 ```
 
-已部署 lxserver 的爱快项目可以只追加网关服务；同一项目内使用 `http://lxserver:9527`。如果网关单独建项目，使用 `http://192.168.8.1:9527`。
+你的爱快项目已经独立部署 lxserver，因此 iKuai 专用 Compose 不再创建 lxserver，而是新增 `xiaozhi-esp32-server` 和 `xiaomi-gateway`。网关必须使用 `http://192.168.8.1:9527`；只有把 lxserver 和网关放进同一 Compose 项目时，才使用 `http://lxserver:9527`。
+
+iKuai 专用服务为：
+
+```text
+xiaozhi-esp32-server :8000 / :8003
+xiaomi-gateway       :58092
+lxserver             已由另一个 Compose 项目提供 :9527
+```
 
 首次启动保持 `MI_LISTENER_ENABLED=false`，先完成：
 

@@ -1,0 +1,20 @@
+# Copy this file to xiaozhi-config.yaml on the iKuai host and replace the
+# Doubao model and key. The ESP32 firmware must use the LAN WebSocket address.
+server:
+  websocket: ws://192.168.8.1:8000/xiaozhi/v1/
+
+prompt: |
+  你是小智，回答简洁、自然，适合语音播报。
+  不要输出 Markdown 表格、链接或特殊格式。
+
+selected_module:
+  LLM: DoubaoLLM
+
+LLM:
+  DoubaoLLM:
+    type: openai
+    base_url: https://ark.cn-beijing.volces.com/api/v3
+    model_name: CHANGE_ME_DOUBAO_MODEL_OR_ENDPOINT_ID
+    api_key: CHANGE_ME_DOUBAO_API_KEY
+    temperature: 0.7
+    max_tokens: 500

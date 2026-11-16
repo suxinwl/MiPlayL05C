@@ -1,23 +1,24 @@
-# iKuai Docker Compose: no build directive is used.
-# lxserver is the music backend. The gateway uses the lxserver service name
-# because both services are created by this Compose project.
+# iKuai Docker Compose: lxserver is already deployed separately on 192.168.8.1:9527.
+# This project adds the self-hosted xiaozhi server and the L05C gateway.
 services:
-  lxserver:
-    image: xcq0607/lxserver:latest
+  xiaozhi-esp32-server:
+    image: ghcr.nju.edu.cn/xinnan-tech/xiaozhi-esp32-server:server_latest
     platform: linux/amd64
-    container_name: miplayl05c-lxserver
+    container_name: xiaozhi-esp32-server
     restart: unless-stopped
-    ports:
-      - "9527:9527"
-    volumes:
-      - ./lxdata:/server/data
-      - ./lxcache:/server/cache
-      - ./lxmusic:/server/music
+    security_opt:
+      - seccomp:unconfined
     environment:
-      NODE_ENV: production
-      ADMIN_PASSWORD: "CHANGE_ME_LX_ADMIN_PASSWORD"
-      ENABLE_WEBPLAYER_AUTH: "true"
-      WEBPLAYER_PASSWORD: "CHANGE_ME_LX_WEBPLAYER_PASSWORD"
+      TZ: Asia/Shanghai
+    ports:
+      - "8000:8000"
+      - "8003:8003"
+    volumes:
+      - ./xiaozhi-data:/opt/xiaozhi-esp32-server/data
+      # Host filename avoids iKuai's leading-dot restriction; the container
+      # still receives the filename required by xiaozhi-server.
+      - ./xiaozhi-config.yaml:/opt/xiaozhi-esp32-server/data/.config.yaml:ro
+      - ./xiaozhi-models/SenseVoiceSmall/model.pt:/opt/xiaozhi-esp32-server/models/SenseVoiceSmall/model.pt:ro
 
   xiaomi-gateway:
     image: ghcr.io/suxinwl/xiaomi-gateway:latest
@@ -32,16 +33,16 @@ services:
       GATEWAY_HOST: "0.0.0.0"
       GATEWAY_PORT: "58092"
 
-      # Music: lxserver native API. MUSIC_SOURCE values are kw/kg/tx/wy/mg.
+      # lxserver already runs in another iKuai Compose project.
       MUSIC_BACKEND: lxserver
-      LXSERVER_BASE_URL: http://lxserver:9527
+      LXSERVER_BASE_URL: http://192.168.8.1:9527
       LXSERVER_USER_NAME: "open"
       LXSERVER_USER_TOKEN: ""
       MUSIC_SOURCE: kw
       MUSIC_QUALITY: 320mp3
       MUSIC_ALLOW_FALLBACK: "true"
 
-      # Xiaomi/MiService. Replace the CHANGE_ME values on the iKuai copy.
+      # Xiaomi/MiService. Replace the CHANGE_ME values locally on iKuai.
       MI_USER: "CHANGE_ME_XIAOMI_ACCOUNT"
       MI_PASS: "CHANGE_ME_XIAOMI_PASSWORD"
       MI_DID: "CHANGE_ME_DEVICE_ID"
@@ -53,33 +54,12 @@ services:
       MI_LISTENER_ENABLED: "false"
       MI_POLL_INTERVAL: "1.0"
 
-      # AI: use the same OpenAI-compatible provider configured in xiaozhi-server.
-      # The xiaozhi-esp32-server itself speaks WebSocket/MQTT to ESP32 devices;
-      # it is not a direct HTTP /v1/chat/completions endpoint for this gateway.
+      # Keep these values identical to the DoubaoLLM block in xiaozhi-config.yaml.
+      # xiaozhi-esp32-server itself uses WebSocket/MQTT for ESP32 devices;
+      # it is not used here as an HTTP /v1/chat/completions endpoint.
       MODEL_PROVIDER: doubao
       MODEL_NAME: "CHANGE_ME_DOUBAO_MODEL_OR_ENDPOINT_ID"
       MODEL_BASE_URL: https://ark.cn-beijing.volces.com/api/v3
       MODEL_API_KEY: "CHANGE_ME_DOUBAO_API_KEY"
       ARK_API_KEY: ""
       XIAOZHI_API_KEY: ""
-
-    depends_on:
-      - lxserver
-
-  # Optional legacy R1 media service. Remove this service if it is not used.
-  # r1-media:
-  #   image: ghcr.io/suxinwl/fx-r1-media-server:1.2.3
-  #   container_name: R1XiaoZhi_MediaServer
-  #   user: "0:0"
-  #   restart: unless-stopped
-  #   ports:
-  #     - "8100:8100"
-  #   volumes:
-  #     - ./files:/app/files
-  #     - ./music:/music
-  #     - ./audiobook:/audiobook
-  #   environment:
-  #     TZ: Asia/Shanghai
-  #     MUSIC_DIR: /music
-  #     ABL_DIR: /audiobook
-  #     RADIOS_FILE: /app/files/radios.json
