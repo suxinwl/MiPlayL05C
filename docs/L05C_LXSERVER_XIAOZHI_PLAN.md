@@ -106,6 +106,8 @@ xiaomi-gateway       :58092
 lxserver             已由另一个 Compose 项目提供 :9527
 ```
 
+iKuai 版本不挂载单独的 `.config.yaml` 文件。小智容器启动命令会根据 `XIAOZHI_WEBSOCKET`、`XIAOZHI_MODEL_BASE_URL`、`XIAOZHI_MODEL_NAME` 和 `XIAOZHI_API_KEY` 自动生成 `/opt/xiaozhi-esp32-server/data/.config.yaml`，避免爱快把缺失的单文件挂载源创建成目录。
+
 首次启动保持 `MI_LISTENER_ENABLED=false`，先完成：
 
 1. lxserver 管理页面登录和音源配置。

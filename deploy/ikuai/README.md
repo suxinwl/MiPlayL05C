@@ -20,7 +20,6 @@ http://192.168.8.1:9527
 ```text
 /mnt/sda1/docker/MiPlayL05C/
 ├── docker-compose.yml
-├── xiaozhi-config.yaml
 ├── xiaozhi-data/
 ├── xiaozhi-models/
 │   └── SenseVoiceSmall/
@@ -29,31 +28,20 @@ http://192.168.8.1:9527
     └── mi.token
 ```
 
-爱快文件名不能以 `.`, `_`, `-` 或括号开头，因此使用 `xiaozhi-config.yaml` 和 `gateway-config/mi.token`。Compose 会把宿主机的 `xiaozhi-config.yaml` 映射为容器内的 `/opt/xiaozhi-esp32-server/data/.config.yaml`，保留镜像内默认 `config.yaml` 并只覆盖需要修改的配置。
-
-注意：必须在首次启动前先上传一个真实的普通文件 `xiaozhi-config.yaml`。如果这个文件不存在，Docker 会自动创建同名目录，随后小智服务会报：`IsADirectoryError: /opt/xiaozhi-esp32-server/data/.config.yaml`。
+爱快文件名不能以 `.`, `_`, `-` 或括号开头，因此只使用目录和 `gateway-config/mi.token`。Compose 会在小智容器启动时根据环境变量自动生成容器内的 `/opt/xiaozhi-esp32-server/data/.config.yaml`，不需要上传 `xiaozhi-config.yaml`。
 
 ## 小智配置
 
-复制：
-
-```text
-deploy/ikuai/xiaozhi-config.example.yaml -> xiaozhi-config.yaml
-```
-
-至少修改：
+Compose 中直接填写：
 
 ```yaml
-server:
-  websocket: ws://192.168.8.1:8000/xiaozhi/v1/
-
-LLM:
-  DoubaoLLM:
-    model_name: 你的方舟模型名或接入点 ID
-    api_key: 你的火山方舟 API Key
+XIAOZHI_WEBSOCKET: ws://192.168.8.1:8000/xiaozhi/v1/
+XIAOZHI_MODEL_BASE_URL: https://ark.cn-beijing.volces.com/api/v3
+XIAOZHI_MODEL_NAME: 你的方舟模型名或接入点 ID
+XIAOZHI_API_KEY: 你的火山方舟 API Key
 ```
 
-`server.websocket` 必须使用爱快局域网地址，因为 ESP32 设备需要从局域网连接它；不能填写容器名。
+`XIAOZHI_WEBSOCKET` 必须使用爱快局域网地址，因为 ESP32 设备需要从局域网连接它；不能填写容器名。
 
 准备小智语音识别模型：
 
@@ -73,9 +61,9 @@ MUSIC_QUALITY: 320mp3
 MUSIC_ALLOW_FALLBACK: "true"
 
 MODEL_PROVIDER: doubao
-MODEL_NAME: 与 xiaozhi-config.yaml 相同
+MODEL_NAME: 与 XIAOZHI_MODEL_NAME 相同
 MODEL_BASE_URL: https://ark.cn-beijing.volces.com/api/v3
-MODEL_API_KEY: 与 xiaozhi-config.yaml 相同
+MODEL_API_KEY: 与 XIAOZHI_API_KEY 相同
 ```
 
 当前网关和小智服务端使用同一个豆包模型配置，但两者是两条协议链路：
@@ -91,7 +79,7 @@ ESP32 -> xiaozhi-esp32-server WebSocket -> 豆包 OpenAI 兼容 API -> 小智 TT
 
 1. 在爱快 Docker 页面创建 Compose 项目。
 2. 粘贴 `deploy/ikuai/docker-compose.yml`。
-3. 先上传 `xiaozhi-config.yaml`、`model.pt` 和 `gateway-config/mi.token`，确认文件管理器显示它们是“文件”而不是目录。
+3. 创建 `xiaozhi-data/`、`xiaozhi-models/SenseVoiceSmall/` 和 `gateway-config/` 目录，只上传 `model.pt` 和 `gateway-config/mi.token` 两个文件。
 4. 替换 Compose 中的 `CHANGE_ME_*`。
 5. 确认 lxserver 已能访问：
 

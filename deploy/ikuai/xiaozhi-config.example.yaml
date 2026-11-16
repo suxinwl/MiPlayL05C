@@ -1,5 +1,6 @@
-# Copy this file to xiaozhi-config.yaml on the iKuai host and replace the
-# Doubao model and key. The ESP32 firmware must use the LAN WebSocket address.
+# Reference only. The current iKuai Compose generates this file inside the
+# container from XIAOZHI_* environment variables, so no YAML upload is needed.
+# The ESP32 firmware must use the LAN WebSocket address.
 server:
   websocket: ws://192.168.8.1:8000/xiaozhi/v1/
 

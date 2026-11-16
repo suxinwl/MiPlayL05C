@@ -8,17 +8,40 @@ services:
     restart: unless-stopped
     security_opt:
       - seccomp:unconfined
-    environment:
-      TZ: Asia/Shanghai
     ports:
       - "8000:8000"
       - "8003:8003"
     volumes:
       - ./xiaozhi-data:/opt/xiaozhi-esp32-server/data
-      # Host filename avoids iKuai's leading-dot restriction; the container
-      # still receives the filename required by xiaozhi-server.
-      - ./xiaozhi-config.yaml:/opt/xiaozhi-esp32-server/data/.config.yaml:ro
       - ./xiaozhi-models/SenseVoiceSmall/model.pt:/opt/xiaozhi-esp32-server/models/SenseVoiceSmall/model.pt:ro
+    command:
+      - /bin/sh
+      - -c
+      - |
+          cat > /opt/xiaozhi-esp32-server/data/.config.yaml <<'EOF'
+          server:
+            websocket: $${XIAOZHI_WEBSOCKET}
+          prompt: |
+            你是小智，回答简洁、自然，适合语音播报。
+            不要输出 Markdown 表格、链接或特殊格式。
+          selected_module:
+            LLM: DoubaoLLM
+          LLM:
+            DoubaoLLM:
+              type: openai
+              base_url: $${XIAOZHI_MODEL_BASE_URL}
+              model_name: $${XIAOZHI_MODEL_NAME}
+              api_key: $${XIAOZHI_API_KEY}
+              temperature: 0.7
+              max_tokens: 500
+          EOF
+          exec python app.py
+    environment:
+      TZ: Asia/Shanghai
+      XIAOZHI_WEBSOCKET: ws://192.168.8.1:8000/xiaozhi/v1/
+      XIAOZHI_MODEL_BASE_URL: https://ark.cn-beijing.volces.com/api/v3
+      XIAOZHI_MODEL_NAME: "CHANGE_ME_DOUBAO_MODEL_OR_ENDPOINT_ID"
+      XIAOZHI_API_KEY: "CHANGE_ME_DOUBAO_API_KEY"
 
   xiaomi-gateway:
     image: ghcr.io/suxinwl/xiaomi-gateway:latest
@@ -54,7 +77,7 @@ services:
       MI_LISTENER_ENABLED: "false"
       MI_POLL_INTERVAL: "1.0"
 
-      # Keep these values identical to the DoubaoLLM block in xiaozhi-config.yaml.
+      # Keep these values identical to the XIAOZHI_* variables above.
       # xiaozhi-esp32-server itself uses WebSocket/MQTT for ESP32 devices;
       # it is not used here as an HTTP /v1/chat/completions endpoint.
       MODEL_PROVIDER: doubao
