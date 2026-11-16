@@ -55,6 +55,9 @@ jobs:
           file: ${{ matrix.file }}
           platforms: linux/amd64
           push: true
+          # Keep the manifest compatible with older Docker engines used by iKuai.
+          provenance: false
+          sbom: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.image }}
