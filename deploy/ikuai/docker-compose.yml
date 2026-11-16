@@ -1,0 +1,56 @@
+# iKuai Docker Compose: no build directive is used.
+# Images are built by GitHub Actions and published to GHCR.
+services:
+  oo-music:
+    image: ghcr.io/suxinwl/oo-music:latest
+    container_name: miplayl05c-oo-music
+    # iKuai creates bind-mounted directories as root. The image writes the
+    # SQLite database and login state under /data on the trusted LAN.
+    user: "0:0"
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    volumes:
+      - ./oo-music-data:/data
+    environment:
+      OO_MUSIC_ADDR: "0.0.0.0:8787"
+      OO_MUSIC_DB_PATH: /data/oo-music.db
+      OO_MUSIC_WEB_DIST: /app/web
+      OO_MUSIC_ADMIN_USERNAME: "${OO_MUSIC_ADMIN_USERNAME}"
+      OO_MUSIC_ADMIN_PASSWORD: "${OO_MUSIC_ADMIN_PASSWORD}"
+
+  xiaomi-gateway:
+    image: ghcr.io/suxinwl/xiaomi-gateway:latest
+    container_name: miplayl05c-xiaomi-gateway
+    restart: unless-stopped
+    ports:
+      - "58092:58092"
+    volumes:
+      - ./gateway-config:/config
+    environment:
+      GATEWAY_HOST: "0.0.0.0"
+      GATEWAY_PORT: "58092"
+      OO_MUSIC_BASE_URL: http://oo-music:8787
+      MUSIC_SOURCE: "${MUSIC_SOURCE:-qq}"
+      MUSIC_QUALITY: "${MUSIC_QUALITY:-320mp3}"
+      MUSIC_ALLOW_FALLBACK: "${MUSIC_ALLOW_FALLBACK:-true}"
+      OO_MUSIC_CLIENT_ACCOUNT_ID: "${OO_MUSIC_CLIENT_ACCOUNT_ID:-}"
+      OO_MUSIC_CLIENT_ACCESS_KEY: "${OO_MUSIC_CLIENT_ACCESS_KEY:-}"
+      MI_USER: "${MI_USER:-}"
+      MI_PASS: "${MI_PASS:-}"
+      MI_DID: "${MI_DID:-}"
+      MI_TOKEN_PATH: /config/.mi.token
+      SPEAKER_HARDWARE: L05C
+      SPEAKER_TTS_COMMAND: "5,3"
+      STREAM_RESPONSE: "false"
+      MI_LISTENER_ENABLED: "${MI_LISTENER_ENABLED:-false}"
+      MI_POLL_INTERVAL: "${MI_POLL_INTERVAL:-1.0}"
+      MODEL_PROVIDER: "${MODEL_PROVIDER:-deepseek}"
+      MODEL_NAME: "${MODEL_NAME:-deepseek-chat}"
+      MODEL_BASE_URL: "${MODEL_BASE_URL:-https://api.deepseek.com}"
+      MODEL_API_KEY: "${MODEL_API_KEY:-}"
+      DEEPSEEK_API_KEY: "${DEEPSEEK_API_KEY:-}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      ARK_API_KEY: "${ARK_API_KEY:-}"
+    depends_on:
+      - oo-music
