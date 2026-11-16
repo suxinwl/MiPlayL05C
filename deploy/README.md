@@ -2,6 +2,8 @@
 
 此目录以通用 Docker Compose 为主，群晖 NAS 模板只是可选示例。服务不依赖固定宿主机 IP；两个容器在 Compose 网络中通过服务名通信。
 
+注意：`http://oo-music:8787` 是容器内部地址，只能由 `xiaomi-gateway` 容器访问；浏览器和局域网设备应访问 Docker 主机的 `http://<主机IP>:8787`，爱快示例为 `http://192.168.8.1:8787`。
+
 - 复制 `oo-music.env.example` 为 `../oo-music/backend/.env`，设置管理员账号和强密码。
 - 复制 `xiaomi-gateway.env.example` 为 `../xiaomi-gateway/.env`，再填写小米设备、音乐源和模型配置（真实接入阶段使用）。
 

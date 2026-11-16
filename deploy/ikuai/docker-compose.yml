@@ -30,6 +30,7 @@ services:
     environment:
       GATEWAY_HOST: "0.0.0.0"
       GATEWAY_PORT: "58092"
+      # Container-to-container address. Browsers use http://192.168.8.1:8787.
       OO_MUSIC_BASE_URL: http://oo-music:8787
       MUSIC_SOURCE: "${MUSIC_SOURCE:-qq}"
       MUSIC_QUALITY: "${MUSIC_QUALITY:-320mp3}"
