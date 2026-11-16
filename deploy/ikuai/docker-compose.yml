@@ -3,13 +3,12 @@
 services:
   oo-music:
     image: ghcr.io/suxinwl/oo-music:latest
+    platform: linux/amd64
     container_name: miplayl05c-oo-music
     # iKuai creates bind-mounted directories as root. The image writes the
     # SQLite database and login state under /data on the trusted LAN.
     user: "0:0"
     restart: unless-stopped
-    env_file:
-      - ./.env
     ports:
       - "8787:8787"
     volumes:
@@ -18,13 +17,14 @@ services:
       OO_MUSIC_ADDR: "0.0.0.0:8787"
       OO_MUSIC_DB_PATH: /data/oo-music.db
       OO_MUSIC_WEB_DIST: /app/web
+      OO_MUSIC_ADMIN_USERNAME: "${OO_MUSIC_ADMIN_USERNAME}"
+      OO_MUSIC_ADMIN_PASSWORD: "${OO_MUSIC_ADMIN_PASSWORD}"
 
   xiaomi-gateway:
     image: ghcr.io/suxinwl/xiaomi-gateway:latest
+    platform: linux/amd64
     container_name: miplayl05c-xiaomi-gateway
     restart: unless-stopped
-    env_file:
-      - ./.env
     ports:
       - "58092:58092"
     volumes:
