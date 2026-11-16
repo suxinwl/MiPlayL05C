@@ -21,7 +21,7 @@ services:
       OO_MUSIC_ADMIN_PASSWORD: "${OO_MUSIC_ADMIN_PASSWORD}"
 
   xiaomi-gateway:
-    image: ghcr.io/suxinwl/xiaomi-gateway:60e144a
+    image: ghcr.io/suxinwl/xiaomi-gateway:8ee45c8
     platform: linux/amd64
     container_name: miplayl05c-xiaomi-gateway
     restart: unless-stopped

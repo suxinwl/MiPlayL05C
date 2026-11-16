@@ -4,7 +4,7 @@
 
 ```text
 ghcr.io/suxinwl/oo-music:60e144a
-ghcr.io/suxinwl/xiaomi-gateway:60e144a
+ghcr.io/suxinwl/xiaomi-gateway:8ee45c8
 ```
 
 地址要区分：`http://oo-music:8787` 只供网关容器在 Docker 网络内部访问；电脑浏览器、手机和小爱设备访问管理页或网关时，使用爱快局域网地址 `http://192.168.8.1:8787` 和 `http://192.168.8.1:58092`。
