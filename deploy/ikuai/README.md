@@ -31,6 +31,8 @@ http://192.168.8.1:9527
 
 爱快文件名不能以 `.`, `_`, `-` 或括号开头，因此使用 `xiaozhi-config.yaml` 和 `gateway-config/mi.token`。Compose 会把宿主机的 `xiaozhi-config.yaml` 映射为容器内的 `/opt/xiaozhi-esp32-server/data/.config.yaml`，保留镜像内默认 `config.yaml` 并只覆盖需要修改的配置。
 
+注意：必须在首次启动前先上传一个真实的普通文件 `xiaozhi-config.yaml`。如果这个文件不存在，Docker 会自动创建同名目录，随后小智服务会报：`IsADirectoryError: /opt/xiaozhi-esp32-server/data/.config.yaml`。
+
 ## 小智配置
 
 复制：
@@ -89,7 +91,7 @@ ESP32 -> xiaozhi-esp32-server WebSocket -> 豆包 OpenAI 兼容 API -> 小智 TT
 
 1. 在爱快 Docker 页面创建 Compose 项目。
 2. 粘贴 `deploy/ikuai/docker-compose.yml`。
-3. 上传 `xiaozhi-config.yaml`、`model.pt` 和 `gateway-config/mi.token`。
+3. 先上传 `xiaozhi-config.yaml`、`model.pt` 和 `gateway-config/mi.token`，确认文件管理器显示它们是“文件”而不是目录。
 4. 替换 Compose 中的 `CHANGE_ME_*`。
 5. 确认 lxserver 已能访问：
 
