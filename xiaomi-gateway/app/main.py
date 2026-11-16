@@ -15,19 +15,30 @@ from .schemas import (
     RouteRequest,
     RouteResponse,
 )
+from .services.lxserver import LxServerClient, LxServerProtocolError
 from .services.oo_music import OoMusicClient, OoMusicProtocolError
 from .services.llm import LLMService
 from .services.listener import GatewayListener
 from .services.mi_service import MiServiceController, MiServiceSettings
 
-music_client = OoMusicClient(
-    settings.oo_music_base_url,
-    source=settings.music_source,
-    quality=settings.music_quality,
-    allow_fallback=settings.music_allow_fallback,
-    account_id=settings.oo_music_client_account_id,
-    access_key=settings.oo_music_client_access_key,
-)
+if settings.music_backend == "lxserver":
+    music_client = LxServerClient(
+        settings.lxserver_base_url,
+        source=settings.music_source,
+        quality=settings.music_quality,
+        allow_fallback=settings.music_allow_fallback,
+        user_name=settings.lxserver_user_name,
+        user_token=settings.lxserver_user_token,
+    )
+else:
+    music_client = OoMusicClient(
+        settings.oo_music_base_url,
+        source=settings.music_source,
+        quality=settings.music_quality,
+        allow_fallback=settings.music_allow_fallback,
+        account_id=settings.oo_music_client_account_id,
+        access_key=settings.oo_music_client_access_key,
+    )
 llm_service = LLMService(settings)
 mi_controller = MiServiceController(
     MiServiceSettings(
@@ -85,10 +96,12 @@ async def status() -> dict[str, object]:
         "mi_did_configured": bool(settings.mi_did),
         "mi_miot_did_configured": bool(settings.mi_miot_did),
         "mi_token_path": settings.mi_token_path,
+        "music_backend": settings.music_backend,
         "model_provider": settings.model_provider,
         "model_name": settings.model_name,
         "model_key_configured": bool(settings.model_api_key),
         "oo_music_base_url": settings.oo_music_base_url,
+        "lxserver_base_url": settings.lxserver_base_url,
         "music_source": settings.music_source,
         "music_quality": settings.music_quality,
         "music_allow_fallback": settings.music_allow_fallback,
@@ -114,7 +127,7 @@ def _music_http_error(exc: Exception) -> HTTPException:
             status_code=400,
             detail={"code": "invalid_music_request", "message": str(exc)},
         )
-    if isinstance(exc, OoMusicProtocolError):
+    if isinstance(exc, (OoMusicProtocolError, LxServerProtocolError)):
         return HTTPException(
             status_code=502,
             detail={"code": "music_protocol_error", "message": str(exc)},
@@ -129,7 +142,7 @@ def _music_http_error(exc: Exception) -> HTTPException:
             message = "当前音乐源服务暂不可用"
         else:
             code = "music_upstream_error"
-            message = f"oo-music 返回 HTTP {status}"
+            message = f"{settings.music_backend} 返回 HTTP {status}"
         return HTTPException(status_code=502, detail={"code": code, "message": message})
     return HTTPException(
         status_code=502,
@@ -156,7 +169,7 @@ async def route(request: RouteRequest) -> RouteResponse:
             handled=False,
             passthrough=False,
             source=_validate_request_source(request.source),
-            reason="music adapter placeholder; next step calls oo-music then MiService",
+            reason="music adapter calls the configured backend then MiService",
         )
     return RouteResponse(
         intent="ai",
@@ -169,7 +182,7 @@ async def route(request: RouteRequest) -> RouteResponse:
 
 @app.post("/v1/music/resolve")
 async def resolve_music(request: MusicResolveRequest) -> dict[str, object]:
-    """Resolve a fresh playback URL from oo-music.
+    """Resolve a fresh playback URL from the configured music backend.
 
     The URL is intentionally resolved just in time because QQ/NetEase URLs
     can be signed and expire. MiService playback will be added after this
@@ -177,12 +190,13 @@ async def resolve_music(request: MusicResolveRequest) -> dict[str, object]:
     """
     source = _validate_request_source(request.source)
     try:
-        result = await music_client.resolve_mp3(
-            request.song_id,
-            source,
-            quality=request.quality,
-            allow_fallback=settings.music_allow_fallback,
-        )
+        resolve_kwargs = {
+            "quality": request.quality,
+            "allow_fallback": settings.music_allow_fallback,
+        }
+        if request.song_info is not None:
+            resolve_kwargs["song_info"] = request.song_info
+        result = await music_client.resolve_mp3(request.song_id, source, **resolve_kwargs)
     except Exception as exc:
         raise _music_http_error(exc) from exc
     return {
@@ -204,19 +218,20 @@ async def play_music(request: MusicPlayRequest) -> dict[str, object]:
     """Resolve a fresh URL from oo-music and send it to the L05C."""
     source = _validate_request_source(request.source)
     try:
-        result = await music_client.resolve_mp3(
-            request.song_id,
-            source,
-            quality=request.quality,
-            allow_fallback=settings.music_allow_fallback,
-        )
+        resolve_kwargs = {
+            "quality": request.quality,
+            "allow_fallback": settings.music_allow_fallback,
+        }
+        if request.song_info is not None:
+            resolve_kwargs["song_info"] = request.song_info
+        result = await music_client.resolve_mp3(request.song_id, source, **resolve_kwargs)
     except Exception as exc:
         raise _music_http_error(exc) from exc
     url = result.get("url") or result.get("playbackUrl") or result.get("playback_url")
     if not music_client.is_playable(result) or not isinstance(url, str) or not url:
         raise HTTPException(
             status_code=502,
-            detail={"code": "no_playable_url", "message": "oo-music returned no playable MP3 URL"},
+            detail={"code": "no_playable_url", "message": "音乐后端返回了空的可播放地址"},
         )
     played = await mi_controller.play_url(url)
     return {

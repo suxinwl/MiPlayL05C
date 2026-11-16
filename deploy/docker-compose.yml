@@ -1,25 +1,20 @@
 services:
-  oo-music:
-    image: ghcr.io/suxinwl/oo-music:latest
+  lxserver:
+    image: xcq0607/lxserver:latest
     pull_policy: always
-    container_name: oo-music-backend
+    container_name: lx-sync-server
     restart: unless-stopped
-    env_file:
-      - ../oo-music/backend/.env
-    environment:
-      OO_MUSIC_ADDR: 0.0.0.0:8787
-      OO_MUSIC_DB_PATH: /data/oo-music.db
-      OO_MUSIC_WEB_DIST: /app/web
     ports:
-      - "8787:8787"
+      - "9527:9527"
     volumes:
-      - oo-music-data:/data
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8787/healthz"]
-      interval: 30s
-      timeout: 5s
-      start_period: 15s
-      retries: 3
+      - lxserver-data:/server/data
+      - lxserver-cache:/server/cache
+      - lxserver-music:/server/music
+    environment:
+      NODE_ENV: production
+      ADMIN_PASSWORD: "CHANGE_ME_LX_ADMIN_PASSWORD"
+      ENABLE_WEBPLAYER_AUTH: "true"
+      WEBPLAYER_PASSWORD: "CHANGE_ME_LX_WEBPLAYER_PASSWORD"
     networks:
       - xiaomi
 
@@ -31,19 +26,22 @@ services:
     env_file:
       - ../xiaomi-gateway/.env
     environment:
-      OO_MUSIC_BASE_URL: http://oo-music:8787
+      MUSIC_BACKEND: lxserver
+      LXSERVER_BASE_URL: http://lxserver:9527
+      MUSIC_SOURCE: kw
     ports:
       - "58092:58092"
     volumes:
       - gateway-config:/config
     depends_on:
-      oo-music:
-        condition: service_healthy
+      - lxserver
     networks:
       - xiaomi
 
 volumes:
-  oo-music-data:
+  lxserver-data:
+  lxserver-cache:
+  lxserver-music:
   gateway-config:
 
 networks:

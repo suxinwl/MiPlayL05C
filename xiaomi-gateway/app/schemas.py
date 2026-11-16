@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -24,6 +24,10 @@ class MusicResolveRequest(BaseModel):
     song_id: str = Field(min_length=1, max_length=128)
     source: str | None = Field(default=None, description="兼容字段，必须匹配网关 MUSIC_SOURCE")
     quality: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_-]+$")
+    song_info: dict[str, Any] | None = Field(
+        default=None,
+        description="lxserver /api/music/url 所需的完整歌曲信息，来自 /v1/music/search 结果",
+    )
 
 
 class AIAnswerRequest(BaseModel):

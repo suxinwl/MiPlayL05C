@@ -1,19 +1,20 @@
 services:
-  oo-music:
-    image: ghcr.io/suxinwl/oo-music:latest
+  lxserver:
+    image: xcq0607/lxserver:latest
     pull_policy: always
-    container_name: oo-music-backend
+    container_name: lx-sync-server
     restart: unless-stopped
-    env_file:
-      - /volume1/docker/xiaoai-music/oo-music/backend/.env
     environment:
-      OO_MUSIC_ADDR: 0.0.0.0:8787
-      OO_MUSIC_DB_PATH: /data/oo-music.db
-      OO_MUSIC_WEB_DIST: /app/web
+      NODE_ENV: production
+      ADMIN_PASSWORD: "CHANGE_ME_LX_ADMIN_PASSWORD"
+      ENABLE_WEBPLAYER_AUTH: "true"
+      WEBPLAYER_PASSWORD: "CHANGE_ME_LX_WEBPLAYER_PASSWORD"
     ports:
-      - "8787:8787"
+      - "9527:9527"
     volumes:
-      - /volume1/docker/xiaoai-music/runtime/oo-music:/data
+      - /volume1/docker/xiaoai-music/runtime/lxdata:/server/data
+      - /volume1/docker/xiaoai-music/runtime/lxcache:/server/cache
+      - /volume1/docker/xiaoai-music/runtime/lxmusic:/server/music
     networks:
       - xiaomi
 
@@ -25,14 +26,16 @@ services:
     env_file:
       - /volume1/docker/xiaoai-music/xiaomi-gateway/.env
     environment:
-      OO_MUSIC_BASE_URL: http://oo-music:8787
-      MI_TOKEN_PATH: /config/.mi.token
+      MUSIC_BACKEND: lxserver
+      LXSERVER_BASE_URL: http://lxserver:9527
+      MUSIC_SOURCE: kw
+      MI_TOKEN_PATH: /config/mi.token
     ports:
       - "58092:58092"
     volumes:
       - /volume1/docker/xiaoai-music/runtime/gateway:/config
     depends_on:
-      - oo-music
+      - lxserver
     networks:
       - xiaomi
 

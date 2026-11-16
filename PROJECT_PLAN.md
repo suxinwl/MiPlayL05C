@@ -1,13 +1,13 @@
 # XiaoAI L05C Docker 统一网关实施计划
 
-完整版规划见 [docs/L05C_DOCKER_PROJECT_PLAN.md](docs/L05C_DOCKER_PROJECT_PLAN.md)。本文件保留项目当前状态和实施摘要；主部署目标是通用 Docker，群晖仅作为可选示例。
+当前完整版规划见 [docs/L05C_LXSERVER_XIAOZHI_PLAN.md](docs/L05C_LXSERVER_XIAOZHI_PLAN.md)。本文件保留历史实施摘要；当前音乐后端已切换到 lxserver，AI 方案参考自建 xiaozhi-esp32-server。
 
 ## 目标
 
 - 适配小爱音箱 Play 增强版（L05C），不刷机。
 - 保留小爱原生米家设备控制，例如“打开客厅的灯”。
-- 使用 `oo-music` 作为统一音乐源后端：当前已支持 QQ 音乐和网易云音乐。
-- 使用 DeepSeek、GPT 或豆包回答普通问题，并通过小爱原生 TTS 播报。
+- 使用 `xcq0607/lxserver:latest` 作为统一音乐源后端。
+- 使用与 xiaozhi-esp32-server 相同的 OpenAI 兼容模型配置，并通过小爱原生 TTS 播报。
 - 在任意 Docker/Compose 主机运行；群晖 NAS `192.168.8.3` 和 iKuai `192.168.8.1` 只是当前可选环境，所有新文件位于 `E:\AI\XiaoAi_misuc`。
 
 ## 最终运行结构

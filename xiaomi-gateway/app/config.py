@@ -3,6 +3,8 @@ import os
 
 
 ALLOWED_MUSIC_SOURCES = frozenset({"qq", "netease"})
+ALLOWED_LXSERVER_SOURCES = frozenset({"kw", "kg", "tx", "wy", "mg"})
+ALLOWED_MUSIC_BACKENDS = frozenset({"oo-music", "lxserver"})
 ALLOWED_MUSIC_QUALITIES = frozenset({"320mp3", "128mp3"})
 
 
@@ -27,7 +29,11 @@ def _parse_bool(value: str, default: bool = False) -> bool:
 class Settings:
     host: str = os.getenv("GATEWAY_HOST", "0.0.0.0")
     port: int = int(os.getenv("GATEWAY_PORT", "58092"))
+    music_backend: str = os.getenv("MUSIC_BACKEND", "oo-music").strip().lower()
     oo_music_base_url: str = os.getenv("OO_MUSIC_BASE_URL", "http://oo-music:8787").rstrip("/")
+    lxserver_base_url: str = os.getenv("LXSERVER_BASE_URL", "http://lxserver:9527").rstrip("/")
+    lxserver_user_name: str = os.getenv("LXSERVER_USER_NAME", "").strip()
+    lxserver_user_token: str = os.getenv("LXSERVER_USER_TOKEN", "").strip()
     music_source: str = os.getenv("MUSIC_SOURCE", "qq").strip().lower()
     music_quality: str = os.getenv("MUSIC_QUALITY", "320mp3").strip().lower()
     music_allow_fallback: bool = _parse_bool(os.getenv("MUSIC_ALLOW_FALLBACK", "true"), True)
@@ -50,9 +56,17 @@ class Settings:
     mi_poll_interval: float = float(os.getenv("MI_POLL_INTERVAL", "1.0"))
 
     def __post_init__(self) -> None:
-        if self.music_source not in ALLOWED_MUSIC_SOURCES:
+        if self.music_backend not in ALLOWED_MUSIC_BACKENDS:
             raise ValueError(
-                f"MUSIC_SOURCE must be one of {sorted(ALLOWED_MUSIC_SOURCES)}, got {self.music_source!r}"
+                f"MUSIC_BACKEND must be one of {sorted(ALLOWED_MUSIC_BACKENDS)}, got {self.music_backend!r}"
+            )
+        allowed_sources = (
+            ALLOWED_MUSIC_SOURCES if self.music_backend == "oo-music" else ALLOWED_LXSERVER_SOURCES
+        )
+        if self.music_source not in allowed_sources:
+            raise ValueError(
+                f"MUSIC_SOURCE must be one of {sorted(allowed_sources)} for backend {self.music_backend!r}, "
+                f"got {self.music_source!r}"
             )
         if self.music_quality not in ALLOWED_MUSIC_QUALITIES:
             raise ValueError(
@@ -76,6 +90,7 @@ class Settings:
             "deepseek": "DEEPSEEK_API_KEY",
             "openai": "OPENAI_API_KEY",
             "doubao": "ARK_API_KEY",
+            "xiaozhi": "XIAOZHI_API_KEY",
         }
         return os.getenv(provider_keys.get(self.model_provider.lower(), ""), "").strip()
 

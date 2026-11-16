@@ -16,11 +16,11 @@ function Test-HttpEndpoint([string]$Name, [string]$Url) {
 }
 
 $ok = $true
-$ok = (Test-HttpEndpoint "oo-music health" "http://$NasIp`:8787/healthz") -and $ok
+$ok = (Test-HttpEndpoint "lxserver status" "http://$NasIp`:9527/api/status") -and $ok
 $ok = (Test-HttpEndpoint "gateway health" "http://$NasIp`:58092/healthz") -and $ok
 
 if (-not $ok) {
     exit 1
 }
 
-Write-Host "基础服务可达。下一步请在 oo-music 管理页绑定 QQ 音乐账号，再执行网关设备和播放地址验收。"
+Write-Host "基础服务可达。下一步请在 lxserver 管理页配置音源，再执行网关设备和播放地址验收。"

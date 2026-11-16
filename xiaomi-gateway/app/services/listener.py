@@ -105,7 +105,15 @@ class GatewayListener:
             return
         try:
             if hasattr(self.music, "resolve_mp3"):
-                playback = await self.music.resolve_mp3(str(song_id))
+                song_info = first.get("_lx_song_info")
+                if isinstance(song_info, dict):
+                    playback = await self.music.resolve_mp3(
+                        str(song_id),
+                        quality="320mp3",
+                        song_info=song_info,
+                    )
+                else:
+                    playback = await self.music.resolve_mp3(str(song_id))
             else:
                 playback = await self.music.playback(str(song_id), quality="320mp3")
         except Exception:

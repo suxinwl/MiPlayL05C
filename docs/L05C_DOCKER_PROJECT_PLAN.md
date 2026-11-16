@@ -1,5 +1,7 @@
 # 小爱音箱 Play 增强版 L05C Docker 统一网关规划
 
+> 当前音乐后端和 AI 接入以 [L05C + lxserver + xiaozhi 方案](L05C_LXSERVER_XIAOZHI_PLAN.md) 为准；本文中的 oo-music 仅作为历史兼容设计保留。
+
 ## 1. 文档定位
 
 本文是小爱音箱 Play 增强版（硬件型号 `L05C`）统一网关的完整实施规划。方案以通用 Docker/Compose 为运行环境，宿主机可以是 NAS、Linux、Windows 或其他能够运行 Docker Engine 的设备；群晖和 iKuai 只是可选的网络部署示例，不是架构前提。

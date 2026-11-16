@@ -109,6 +109,7 @@ class OoMusicClient:
         source: str | None = None,
         quality: str | None = None,
         allow_fallback: bool | None = None,
+        song_info: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         if not str(song_id).strip():
             raise ValueError("song_id must not be empty")
@@ -134,17 +135,28 @@ class OoMusicClient:
         source: str | None = None,
         quality: str | None = None,
         allow_fallback: bool | None = None,
+        song_info: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Resolve a fresh MP3 URL, trying the configured quality then 128 kbps."""
         source = self._requested_source(source)
         preferred_quality = self._validate_quality(quality or self.quality)
         preferred = await self.playback(
-            song_id, source, preferred_quality, allow_fallback=allow_fallback
+            song_id,
+            source,
+            preferred_quality,
+            allow_fallback=allow_fallback,
+            song_info=song_info,
         )
         if self.is_playable(preferred):
             return preferred
         if preferred_quality != "128mp3":
-            fallback = await self.playback(song_id, source, "128mp3", allow_fallback=False)
+            fallback = await self.playback(
+                song_id,
+                source,
+                "128mp3",
+                allow_fallback=False,
+                song_info=song_info,
+            )
             if self.is_playable(fallback):
                 return fallback
             return fallback
