@@ -39,6 +39,7 @@ class Settings:
     mi_user: str = os.getenv("MI_USER", "").strip()
     mi_pass: str = os.getenv("MI_PASS", "")
     mi_did: str = os.getenv("MI_DID", "").strip()
+    mi_miot_did: str = os.getenv("MI_MIOT_DID", "").strip()
     mi_token_path: str = os.getenv("MI_TOKEN_PATH", "/config/.mi.token").strip()
     speaker_hardware: str = os.getenv("SPEAKER_HARDWARE", "L05C").strip()
     speaker_tts_command: tuple[int, int] = _parse_command(

@@ -12,6 +12,7 @@ class MiServiceSettings:
     user: str
     password: str
     did: str
+    miot_did: str = ""
     token_path: str = "/config/.mi.token"
     tts_command: tuple[int, int] = (5, 3)
 
@@ -70,7 +71,8 @@ class MiServiceController:
     async def speak(self, text: str) -> bool:
         await self.start()
         assert self._miio is not None
-        code = await self._miio.miot_action(self.settings.did, self.settings.tts_command, [text])
+        did = self.settings.miot_did or self.settings.did
+        code = await self._miio.miot_action(did, self.settings.tts_command, [text])
         return code == 0
 
     async def close(self) -> None:

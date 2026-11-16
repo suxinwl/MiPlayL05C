@@ -48,7 +48,7 @@ docker compose ps
 
 1. 打开爱快 Docker 管理页面并新建 Compose 项目。
 2. 上传或粘贴本目录的 `docker-compose.yml`。
-3. 在 Compose 编辑器中直接修改管理员密码、小米账号、`MI_DID` 和模型 API Key。
+3. 在 Compose 编辑器中直接修改管理员密码、小米账号、`MI_DID`、`MI_MIOT_DID` 和模型 API Key。
 4. 确认工作目录中存在 `oo-music-data`、`gateway-config` 两个目录。
 5. 将 Xiaomi token 上传为 `gateway-config/mi.token`。
 6. 点击“拉取镜像”，再点击“启动”。
@@ -64,7 +64,7 @@ curl http://192.168.8.1:58092/v1/status
 curl 'http://192.168.8.1:58092/v1/music/search?q=周杰伦晴天'
 ```
 
-接着完成 QQ/网易云扫码登录，放置 `gateway-config/mi.token`，填写 `MI_DID`，验证 `/v1/mi/devices`、`/v1/music/resolve`、`/v1/music/play` 和 `/v1/ai/answer`，最后才把 Compose 中的 `MI_LISTENER_ENABLED` 改为 `"true"`。
+接着完成 QQ/网易云扫码登录，放置 `gateway-config/mi.token`，填写 `MI_DID`（deviceID）和 `MI_MIOT_DID`（miotDID），验证 `/v1/mi/devices`、`/v1/music/resolve`、`/v1/music/play` 和 `/v1/ai/answer`，最后才把 Compose 中的 `MI_LISTENER_ENABLED` 改为 `"true"`。
 
 切换网易云：
 

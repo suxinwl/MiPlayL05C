@@ -34,6 +34,7 @@ mi_controller = MiServiceController(
         user=settings.mi_user,
         password=settings.mi_pass,
         did=settings.mi_did,
+        miot_did=settings.mi_miot_did,
         token_path=settings.mi_token_path,
         tts_command=settings.speaker_tts_command,
     )
@@ -82,6 +83,7 @@ async def status() -> dict[str, object]:
         "stream_response": settings.stream_response,
         "mi_listener_enabled": settings.mi_listener_enabled,
         "mi_did_configured": bool(settings.mi_did),
+        "mi_miot_did_configured": bool(settings.mi_miot_did),
         "mi_token_path": settings.mi_token_path,
         "model_provider": settings.model_provider,
         "model_name": settings.model_name,
