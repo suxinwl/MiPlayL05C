@@ -2,7 +2,7 @@
 # Images are built by GitHub Actions and published to GHCR.
 services:
   oo-music:
-    image: ghcr.io/suxinwl/oo-music:latest
+    image: ghcr.io/suxinwl/oo-music:60e144a
     platform: linux/amd64
     container_name: miplayl05c-oo-music
     # iKuai creates bind-mounted directories as root. The image writes the
@@ -21,7 +21,7 @@ services:
       OO_MUSIC_ADMIN_PASSWORD: "${OO_MUSIC_ADMIN_PASSWORD}"
 
   xiaomi-gateway:
-    image: ghcr.io/suxinwl/xiaomi-gateway:latest
+    image: ghcr.io/suxinwl/xiaomi-gateway:60e144a
     platform: linux/amd64
     container_name: miplayl05c-xiaomi-gateway
     restart: unless-stopped

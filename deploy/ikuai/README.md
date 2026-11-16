@@ -1,10 +1,10 @@
 # 爱快 Docker Compose 部署
 
-此目录适合爱快 Docker 页面导入，Compose 不包含 `build`，使用 GitHub Actions 发布的 GHCR 镜像：
+此目录适合爱快 Docker 页面导入，Compose 不包含 `build`，使用 GitHub Actions 发布的 GHCR 镜像。爱快使用固定提交标签，避免旧版 Docker 缓存 `latest` 的 OCI index：
 
 ```text
-ghcr.io/suxinwl/oo-music:latest
-ghcr.io/suxinwl/xiaomi-gateway:latest
+ghcr.io/suxinwl/oo-music:60e144a
+ghcr.io/suxinwl/xiaomi-gateway:60e144a
 ```
 
 地址要区分：`http://oo-music:8787` 只供网关容器在 Docker 网络内部访问；电脑浏览器、手机和小爱设备访问管理页或网关时，使用爱快局域网地址 `http://192.168.8.1:8787` 和 `http://192.168.8.1:58092`。
