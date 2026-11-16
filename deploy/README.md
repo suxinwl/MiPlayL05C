@@ -34,4 +34,6 @@ ghcr.io/suxinwl/oo-music:latest
 ghcr.io/suxinwl/xiaomi-gateway:latest
 ```
 
+推送到 `main` 后，GitHub Actions 会自动构建并发布这两个镜像到 GHCR；也可以在 Actions 页面手动运行 `Build and publish container images`。
+
 完整的架构、配置、验收和故障排查见 `docs/L05C_DOCKER_PROJECT_PLAN.md`。
