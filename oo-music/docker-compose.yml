@@ -1,0 +1,21 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: ghcr.io/rankgice/oo-music:latest
+    container_name: oo-music-backend
+    restart: unless-stopped
+    env_file:
+      - path: ${OO_MUSIC_ENV_FILE:-./backend/.env}
+        required: false
+    ports:
+      - "127.0.0.1:${OO_MUSIC_PORT:-8787}:8787"
+    volumes:
+      - oo-music-data:/data
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  oo-music-data:
+    name: oo-music-data

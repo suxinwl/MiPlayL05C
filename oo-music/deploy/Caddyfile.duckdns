@@ -1,0 +1,27 @@
+{
+	admin off
+	email {$OO_MUSIC_ACME_EMAIL}
+	auto_https disable_redirects
+}
+
+https://{$OO_MUSIC_DUCKDNS_DOMAIN}:8787 {
+	encode zstd gzip
+
+	tls {
+		dns duckdns {$DUCKDNS_TOKEN} {
+			resolver 223.5.5.5:53
+		}
+	}
+
+	header {
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+
+	reverse_proxy 127.0.0.1:18787 {
+		health_uri /healthz
+		health_interval 30s
+		health_timeout 5s
+	}
+}

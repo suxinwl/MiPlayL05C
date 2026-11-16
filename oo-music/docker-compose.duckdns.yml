@@ -1,0 +1,27 @@
+name: oo-music-caddy
+
+services:
+  caddy:
+    build:
+      context: ./deploy/caddy-duckdns
+      dockerfile: Dockerfile
+    image: ${OO_MUSIC_CADDY_IMAGE:-local/oo-music-caddy-duckdns:latest}
+    container_name: oo-music-caddy-duckdns
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      OO_MUSIC_DUCKDNS_DOMAIN: ${OO_MUSIC_DUCKDNS_DOMAIN:?Set OO_MUSIC_DUCKDNS_DOMAIN}
+      OO_MUSIC_ACME_EMAIL: ${OO_MUSIC_ACME_EMAIL:?Set OO_MUSIC_ACME_EMAIL}
+      DUCKDNS_TOKEN: ${DUCKDNS_TOKEN:?Set DUCKDNS_TOKEN}
+    volumes:
+      - ./deploy/Caddyfile.duckdns:/etc/caddy/Caddyfile:ro
+      - oo-music-duckdns-data:/data
+      - oo-music-duckdns-config:/config
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  oo-music-duckdns-data:
+    name: oo-music-duckdns-data
+  oo-music-duckdns-config:
+    name: oo-music-duckdns-config

@@ -1,0 +1,264 @@
+name: Client Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_base_url:
+        description: "Production backend URL. Falls back to repository variable OO_MUSIC_API_BASE_URL."
+        required: false
+        type: string
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: client-release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: "3.47.5"
+  API_BASE_URL: ${{ inputs.api_base_url || vars.OO_MUSIC_API_BASE_URL }}
+  PUBLIC_RELEASE_REPO: Rankgice/oo-music-release
+  PUBLIC_RELEASE_BRANCH: main
+
+jobs:
+  quality:
+    name: Flutter analyze and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Resolve dependencies
+        working-directory: apps/desktop
+        run: flutter pub get
+      - name: Analyze
+        working-directory: apps/desktop
+        run: flutter analyze
+      - name: Test
+        working-directory: apps/desktop
+        run: flutter test
+
+  macos:
+    name: macOS universal DMG
+    needs: quality
+    runs-on: macos-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Validate production API URL
+        shell: bash
+        run: |
+          if [[ -z "${API_BASE_URL:-}" ]]; then
+            echo "::error::Set workflow input api_base_url or repository variable OO_MUSIC_API_BASE_URL."
+            exit 1
+          fi
+          if [[ ! "${API_BASE_URL}" =~ ^https:// ]]; then
+            echo "::error::Release API_BASE_URL must use HTTPS."
+            exit 1
+          fi
+      - name: Resolve dependencies
+        working-directory: apps/desktop
+        run: flutter pub get
+      - name: Build macOS release
+        working-directory: apps/desktop
+        run: FLUTTER_BIN=flutter ./tool/build_macos_release.sh
+      - name: Package DMG
+        run: ./scripts/package-macos-dmg.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: apps/desktop/build/distribution/*
+          if-no-files-found: error
+
+  windows:
+    name: Windows x64 installer and portable ZIP
+    needs: quality
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Validate production API URL
+        shell: bash
+        run: |
+          if [[ -z "${API_BASE_URL:-}" ]]; then
+            echo "::error::Set workflow input api_base_url or repository variable OO_MUSIC_API_BASE_URL."
+            exit 1
+          fi
+          if [[ ! "${API_BASE_URL}" =~ ^https:// ]]; then
+            echo "::error::Release API_BASE_URL must use HTTPS."
+            exit 1
+          fi
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+      - name: Build Windows installer
+        shell: pwsh
+        run: ./scripts/build-windows-installer.ps1 -ApiBaseUrl $env:API_BASE_URL -SkipChecks
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: apps/desktop/build/windows/distribution/*
+          if-no-files-found: error
+
+  android:
+    name: Android universal release APK
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      # v4 no longer installs the removed legacy "tools" SDK package.
+      - uses: android-actions/setup-android@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Validate release configuration
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [[ -z "${API_BASE_URL:-}" ]]; then
+            echo "::error::Set workflow input api_base_url or repository variable OO_MUSIC_API_BASE_URL."
+            exit 1
+          fi
+          if [[ ! "${API_BASE_URL}" =~ ^https:// ]]; then
+            echo "::error::Release API_BASE_URL must use HTTPS."
+            exit 1
+          fi
+          for name in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::Missing required repository secret: $name"
+              exit 1
+            fi
+          done
+      - name: Prepare release keystore
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          KEYSTORE_PATH="${RUNNER_TEMP}/oo-music-release.jks"
+          printf '%s' "${ANDROID_KEYSTORE_BASE64}" | base64 --decode >"${KEYSTORE_PATH}"
+          chmod 600 "${KEYSTORE_PATH}"
+          echo "ANDROID_KEYSTORE_PATH=${KEYSTORE_PATH}" >>"${GITHUB_ENV}"
+      - name: Install required Android NDK
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "ndk;28.2.13676358"
+      - name: Build signed universal APK
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./scripts/build-android-release.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: apps/desktop/build/distribution/*
+          if-no-files-found: error
+
+  publish:
+    name: Attach artifacts to GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs:
+      - macos
+      - windows
+      - android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release
+          merge-multiple: true
+      - name: Validate public release target
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_MIRROR_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${GH_TOKEN:-}" ]]; then
+            echo "::error::Missing RELEASE_MIRROR_TOKEN repository secret."
+            exit 1
+          fi
+          if ! gh api "repos/${PUBLIC_RELEASE_REPO}" >/dev/null 2>&1; then
+            echo "::error::Cannot access public release repository ${PUBLIC_RELEASE_REPO}; check the token repository access."
+            exit 1
+          fi
+          if ! gh api "repos/${PUBLIC_RELEASE_REPO}/branches/${PUBLIC_RELEASE_BRANCH}" >/dev/null 2>&1; then
+            echo "::error::Public release repository has no ${PUBLIC_RELEASE_BRANCH} branch; initialize it with a README commit first."
+            exit 1
+          fi
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          generate_release_notes: true
+      - name: Publish installers to public release repository
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_MIRROR_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${GH_TOKEN:-}" ]]; then
+            echo "::error::Missing RELEASE_MIRROR_TOKEN repository secret."
+            exit 1
+          fi
+
+          shopt -s nullglob
+          files=(release/*)
+          if (( ${#files[@]} == 0 )); then
+            echo "::error::No release assets were downloaded."
+            exit 1
+          fi
+
+          title="oo music ${GITHUB_REF_NAME}"
+          notes="oo music ${GITHUB_REF_NAME} 安装包。下载后请核对同名 .sha256 文件。"
+
+          if gh release view "${GITHUB_REF_NAME}" --repo "${PUBLIC_RELEASE_REPO}" >/dev/null 2>&1; then
+            gh release upload "${GITHUB_REF_NAME}" "${files[@]}" \
+              --repo "${PUBLIC_RELEASE_REPO}" \
+              --clobber
+            gh release edit "${GITHUB_REF_NAME}" \
+              --repo "${PUBLIC_RELEASE_REPO}" \
+              --title "${title}" \
+              --notes "${notes}" \
+              --latest
+          else
+            gh release create "${GITHUB_REF_NAME}" "${files[@]}" \
+              --repo "${PUBLIC_RELEASE_REPO}" \
+              --target "${PUBLIC_RELEASE_BRANCH}" \
+              --title "${title}" \
+              --notes "${notes}" \
+              --latest
+          fi
+
+          echo "### 公共下载地址" >>"${GITHUB_STEP_SUMMARY}"
+          echo "https://github.com/${PUBLIC_RELEASE_REPO}/releases/tag/${GITHUB_REF_NAME}" >>"${GITHUB_STEP_SUMMARY}"

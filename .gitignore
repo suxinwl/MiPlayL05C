@@ -1,0 +1,43 @@
+# Local credentials and runtime state
+**/.env
+**/.env.*
+!**/.env.example
+**/.mi.token
+**/*.db
+**/*.db-wal
+**/*.db-shm
+**/runtime/
+**/data/
+
+# Python caches and virtual environments
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+**/.venv/
+
+# JavaScript dependencies and generated output
+**/node_modules/
+**/dist/
+**/build/
+**/.vite/
+
+# IDE and OS files
+**/.idea/
+**/.vscode/
+**/.DS_Store
+**/Thumbs.db
+
+# Nested repository metadata; the source is vendored into this project commit.
+oo-music/.git/
+oo-music-git-metadata-backup/
+
+# Historical handoff transcripts may contain environment-specific details.
+oo-music/PROJECT_CHAT_TRANSCRIPT.md
+oo-music/PROJECT_HANDOFF.md
+oo-music/outputs/
+
+# Unrelated projects that are present in the working directory but outside
+# the L05C gateway scope.
+gosuxinwl/
+lxmusic/
+netcloudmusic/

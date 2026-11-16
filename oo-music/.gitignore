@@ -1,0 +1,23 @@
+# Local credentials and IDE state.
+.env
+.idea
+
+# Local SQLite account database and runtime state.
+/data/
+/backend/data/
+*.db
+*.db-shm
+*.db-wal
+
+# React admin console dependencies and build output.
+/admin-web/node_modules/
+/admin-web/dist/
+
+# Local container overrides.
+.env.docker
+/deploy/duckdns.env
+
+# Windows/Go local build artifacts and caches.
+/build/
+/backend/.build-cache/
+/backend/.mod-cache/
