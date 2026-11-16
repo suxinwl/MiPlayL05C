@@ -22,7 +22,7 @@ ghcr.io/suxinwl/xiaomi-gateway:latest
     └── .mi.token
 ```
 
-将 `.env.example` 复制为 `.env`，填写管理员密码、小米账号、设备 DID 和模型配置。完成的 `.env` 不要提交到 GitHub。
+将 `.env.example` 复制为项目目录中的 `.env`，填写管理员密码、小米账号、设备 DID 和模型配置。Compose 会通过 `env_file: ./.env` 读取它；完成的 `.env` 不要提交到 GitHub。
 
 首次部署保持：
 
@@ -38,7 +38,7 @@ MI_LISTENER_ENABLED=false
 ```sh
 cd /mnt/sda1/docker/MiPlayL05C
 docker compose pull
-docker compose up -d
+docker compose --env-file .env up -d
 docker compose ps
 ```
 
@@ -48,7 +48,7 @@ docker compose ps
 
 1. 打开爱快 Docker 管理页面并新建 Compose 项目。
 2. 上传或粘贴本目录的 `docker-compose.yml`。
-3. 在项目环境变量中填写 `.env` 内容。
+3. 在项目目录放置 `.env` 文件；如果页面提供环境变量编辑器，也要确保管理员用户名和密码已设置。
 4. 确认工作目录中存在 `oo-music-data`、`gateway-config` 两个目录。
 5. 点击“拉取镜像”，再点击“启动”。
 
