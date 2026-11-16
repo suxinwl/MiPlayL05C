@@ -16,19 +16,19 @@ ghcr.io/suxinwl/xiaomi-gateway:8ee45c8
 ```text
 /mnt/sda1/docker/MiPlayL05C/
 ├── docker-compose.yml
-├── .env
 ├── oo-music-data/
 └── gateway-config/
-    └── .mi.token
+    └── mi.token
 ```
 
-将 `.env.example` 复制为项目目录中的 `.env`，填写管理员密码、小米账号、设备 DID 和模型配置。Compose 会通过 `env_file: ./.env` 读取它；完成的 `.env` 不要提交到 GitHub。
+爱快文件名不能以 `.`, `_`, `-` 或括号开头，因此本方案不使用 `.env` 文件，也不使用 `.mi.token` 文件名。所有参数直接写在 `docker-compose.yml` 的 `environment` 中，部署前把占位符替换为真实值。
 
 首次部署保持：
 
-```dotenv
-MUSIC_SOURCE=qq
-MI_LISTENER_ENABLED=false
+```yaml
+MUSIC_SOURCE: qq
+MI_LISTENER_ENABLED: "false"
+MI_TOKEN_PATH: /config/mi.token
 ```
 
 ## 命令行部署
@@ -38,7 +38,7 @@ MI_LISTENER_ENABLED=false
 ```sh
 cd /mnt/sda1/docker/MiPlayL05C
 docker compose pull
-docker compose --env-file .env up -d
+docker compose up -d
 docker compose ps
 ```
 
@@ -48,9 +48,10 @@ docker compose ps
 
 1. 打开爱快 Docker 管理页面并新建 Compose 项目。
 2. 上传或粘贴本目录的 `docker-compose.yml`。
-3. 在项目目录放置 `.env` 文件；如果页面提供环境变量编辑器，也要确保管理员用户名和密码已设置。
+3. 在 Compose 编辑器中直接修改管理员密码、小米账号、`MI_DID` 和模型 API Key。
 4. 确认工作目录中存在 `oo-music-data`、`gateway-config` 两个目录。
-5. 点击“拉取镜像”，再点击“启动”。
+5. 将 Xiaomi token 上传为 `gateway-config/mi.token`。
+6. 点击“拉取镜像”，再点击“启动”。
 
 ## 首次验收
 
@@ -63,15 +64,15 @@ curl http://192.168.8.1:58092/v1/status
 curl 'http://192.168.8.1:58092/v1/music/search?q=周杰伦晴天'
 ```
 
-接着完成 QQ/网易云扫码登录，放置 `gateway-config/.mi.token`，填写 `MI_DID`，验证 `/v1/mi/devices`、`/v1/music/resolve`、`/v1/music/play` 和 `/v1/ai/answer`，最后才设置 `MI_LISTENER_ENABLED=true`。
+接着完成 QQ/网易云扫码登录，放置 `gateway-config/mi.token`，填写 `MI_DID`，验证 `/v1/mi/devices`、`/v1/music/resolve`、`/v1/music/play` 和 `/v1/ai/answer`，最后才把 Compose 中的 `MI_LISTENER_ENABLED` 改为 `"true"`。
 
 切换网易云：
 
-```dotenv
-MUSIC_SOURCE=netease
+```yaml
+MUSIC_SOURCE: netease
 ```
 
-保存 `.env` 后执行：
+保存 Compose 后执行：
 
 ```sh
 docker compose up -d --force-recreate xiaomi-gateway
