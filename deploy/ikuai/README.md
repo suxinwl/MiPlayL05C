@@ -20,7 +20,7 @@ http://192.168.8.1:9527
 ```text
 /mnt/sda1/docker/MiPlayL05C/
 ├── docker-compose.yml
-├── xiaozhi-data/
+├── xiaozhi-runtime/
 ├── xiaozhi-models/
 │   └── SenseVoiceSmall/
 │       └── model.pt
@@ -79,7 +79,7 @@ ESP32 -> xiaozhi-esp32-server WebSocket -> 豆包 OpenAI 兼容 API -> 小智 TT
 
 1. 在爱快 Docker 页面创建 Compose 项目。
 2. 粘贴 `deploy/ikuai/docker-compose.yml`。
-3. 创建 `xiaozhi-data/`、`xiaozhi-models/SenseVoiceSmall/` 和 `gateway-config/` 目录，只上传 `model.pt` 和 `gateway-config/mi.token` 两个文件。
+3. 创建 `xiaozhi-runtime/`、`xiaozhi-models/SenseVoiceSmall/` 和 `gateway-config/` 目录，只上传 `model.pt` 和 `gateway-config/mi.token` 两个文件。
 4. 替换 Compose 中的 `CHANGE_ME_*`。
 5. 确认 lxserver 已能访问：
 
@@ -143,9 +143,10 @@ docker compose up -d --force-recreate xiaozhi-esp32-server xiaomi-gateway
 不要删除：
 
 ```text
-xiaozhi-data/
+xiaozhi-runtime/
 xiaozhi-models/
 gateway-config/
 ```
 
 这些目录分别保存小智配置、语音模型和 Xiaomi token。
+

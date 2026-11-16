@@ -144,3 +144,4 @@ GET  http://192.168.8.1:58092/v1/mi/devices
 - [LX Server 部署文档](https://xcq0607.github.io/lxserver/guide/deployment.html)
 - [xiaozhi-esp32-server GitHub](https://github.com/xinnan-tech/xiaozhi-esp32-server)
 - [小智自建服务端说明](https://xiaozhi.dev/docs/usage/self-hosted-server/)
+

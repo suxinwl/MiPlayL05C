@@ -12,7 +12,7 @@ services:
       - "8000:8000"
       - "8003:8003"
     volumes:
-      - ./xiaozhi-data:/opt/xiaozhi-esp32-server/data
+      - ./xiaozhi-runtime:/opt/xiaozhi-esp32-server/data
       - ./xiaozhi-models/SenseVoiceSmall/model.pt:/opt/xiaozhi-esp32-server/models/SenseVoiceSmall/model.pt:ro
     command:
       - /bin/sh
