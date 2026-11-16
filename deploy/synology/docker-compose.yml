@@ -1,9 +1,7 @@
 services:
   oo-music:
-    build:
-      context: /volume1/docker/xiaoai-music/oo-music
-      dockerfile: backend/Dockerfile
-    image: oo-music-backend:local
+    image: ghcr.io/suxinwl/oo-music:latest
+    pull_policy: always
     container_name: oo-music-backend
     restart: unless-stopped
     env_file:
@@ -20,9 +18,8 @@ services:
       - xiaomi
 
   xiaomi-gateway:
-    build:
-      context: /volume1/docker/xiaoai-music/xiaomi-gateway
-    image: xiaomi-gateway:local
+    image: ghcr.io/suxinwl/xiaomi-gateway:latest
+    pull_policy: always
     container_name: xiaomi-gateway
     restart: unless-stopped
     env_file:

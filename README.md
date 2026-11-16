@@ -17,10 +17,10 @@ docs/              完整 Docker 项目规划
 
 ## Docker 部署
 
-通用 Compose：
+通用 Compose（从 GHCR 拉取镜像）：
 
 ```powershell
-docker compose -f E:/AI/XiaoAi_misuc/deploy/docker-compose.yml build
+docker compose -f E:/AI/XiaoAi_misuc/deploy/docker-compose.yml pull
 docker compose -f E:/AI/XiaoAi_misuc/deploy/docker-compose.yml up -d
 ```
 

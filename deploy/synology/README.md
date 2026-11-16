@@ -37,7 +37,12 @@ deploy/xiaomi-gateway.env.example -> xiaomi-gateway/.env
 /volume1/docker/xiaoai-music/deploy/synology/docker-compose.yml
 ```
 
-构建并启动后访问：
+拉取并启动后访问：
+
+```bash
+docker compose -f /volume1/docker/xiaoai-music/deploy/synology/docker-compose.yml pull
+docker compose -f /volume1/docker/xiaoai-music/deploy/synology/docker-compose.yml up -d
+```
 
 ```text
 oo-music 管理页： http://192.168.8.3:8787
